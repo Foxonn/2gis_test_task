@@ -25,17 +25,17 @@ def _display_list_file_selection() -> list:
 
 
 def _display_list_selection_employee(path_to_file: str) -> list:
+    select = click.confirm("Do you want to choose an employee's"
+                           " name? otherwise, enter")
+
+    employees = get_all_employees(path_to_file)
+
     def generator_employees():
         for n in employees:
             yield f"{n}\n"
 
-    select = click.confirm("Do you want to choose an employee's"
-                           " name? otherwise, enter")
-
     if select:
         click.echo_via_pager(generator_employees())
-
-    employees = get_all_employees(path_to_file)
 
     while True:
         name = click.prompt("Enter name employee", type=str,
