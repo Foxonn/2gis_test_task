@@ -60,7 +60,8 @@ def generate(records: int = 100, file_name="work_time_employees"):
 
 
 if __name__ == '__main__':
-    generate(records=1000, file_name="work_time_employees")
-    generate(records=100000, file_name="big_work_time_employees")
-    generate(records=1000000, file_name="very_big_work_time_employees")
+    # generate(records=1000, file_name="work_time_employees")
+    # generate(records=10000, file_name="middle_work_time_employees")
+    # generate(records=100000, file_name="big_work_time_employees")
+    # generate(records=1000000, file_name="very_big_work_time_employees")
     pass

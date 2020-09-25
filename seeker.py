@@ -17,7 +17,6 @@ def _normalize_datetime(start_time: str) -> "datetime.datetime.strptime":
             raise
 
 
-@profile
 def get_total_work_time(path_to_file: str,
                         employee_name: str = '',
                         from_: str = '',
@@ -31,6 +30,8 @@ def get_total_work_time(path_to_file: str,
         full_name = elem.attrib.get('full_name')
         start = elem.find('start')
         end = elem.find('end')
+
+        _clear_context(elem)
 
         if from_:
             if from_ := _normalize_datetime(from_):
@@ -57,8 +58,6 @@ def get_total_work_time(path_to_file: str,
             'end': end.text,
         })
 
-        _clear_context(elem)
-
     if summ:
         total_work_times = {}
 
@@ -81,29 +80,24 @@ def get_total_work_time(path_to_file: str,
     return work_list if work_list else None
 
 
-def filtering_by_name(file_name: str, employee_name: str) -> list:
+@profile
+def filtering_by_name(file_name: str, employee_name: str = '') -> None:
     context = _get_context(file_name)
-
-    work_list = []
 
     for event, elem in context:
         full_name = elem.attrib.get('full_name')
 
-        if full_name == employee_name:
-            start = elem.find('start')
-            end = elem.find('end')
+        start = elem.find('start')
+        end = elem.find('end')
 
-            work_list.append(
-                {
-                    'full_name': full_name,
-                    'start': start.text,
-                    'end': end.text,
-                }
-            )
+        if full_name == employee_name:
+            print({'full_name': full_name, 'start': start.text, 'end': end.text,})
+        else:
+            print({'full_name': full_name, 'start': start.text, 'end': end.text,})
 
         _clear_context(elem)
 
-    return work_list
+    return None
 
 
 def get_all_employees(file_name: str) -> list:
@@ -138,12 +132,13 @@ def _get_context(file_name: str) -> "etree.iterparse":
 
 if __name__ == '__main__':
     # print(get_all_employees('xml/work_time_employees.xml'))
-    # print(filtering_by_name('xml/work_time_employees.xml', 'd.malley'))
-    # print(get_total_work_time('xml/work_time_employees.xml',
-    # employee_name='-'))
+    # filtering_by_name('xml/work_time_employees.xml')
+    # filtering_by_name('xml/middle_work_time_employees.xml')
+    filtering_by_name('xml/big_work_time_employees.xml')
+    # filtering_by_name('xml/very_big_work_time_employees.xml')
 
     # get_total_work_time('xml/work_time_employees.xml', employee_name='-')
-    get_total_work_time('xml/big_work_time_employees.xml', employee_name='-')
-    # get_total_work_time('xml/very_big_work_time_employees.xml',
-    # employee_name='-')
+    # get_total_work_time('xml/middle_work_time_employees.xml', employee_name='-')
+    # get_total_work_time('xml/big_work_time_employees.xml', employee_name='-', summ=False)
+    # get_total_work_time('xml/very_big_work_time_employees.xml', employee_name='-', summ=False)
     pass
