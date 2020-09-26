@@ -118,7 +118,6 @@ def _display_to_date(date_from) -> list:
     return [date, select_to]
 
 
-@profile
 def run() -> None:
     path_to_file, select_file = _display_list_file_selection()
 
