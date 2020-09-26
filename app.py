@@ -107,8 +107,8 @@ def _get_to_date(date_from):
 @click.command()
 @click.option('--path', help='Path to file.')
 @click.option('--name', help='Employee name to search or `-`')
-@click.option('--start', help='Date start search or `-`')
-@click.option('--stop', help='Date stop search or `-`')
+@click.option('--start', help='Date start search.')
+@click.option('--stop', help='Date stop search.')
 @click.option('--summ', help='Sum work time [y/n]')
 def run(path, name, start, stop, summ) -> None:
     if not path:
