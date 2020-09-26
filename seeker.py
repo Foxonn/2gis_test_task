@@ -18,12 +18,11 @@ def _normalize_datetime(start_time: str) -> "datetime.datetime.strptime":
             raise
 
 
-@profile
 def get_total_work_time(path_to_file: str,
                         employee_name: str = '',
                         from_: str = '',
                         to_: str = '',
-                        sum_: bool = True) -> dict:
+                        sum_: bool = False) -> dict:
     context = _get_context(path_to_file)
 
     work_list = {}

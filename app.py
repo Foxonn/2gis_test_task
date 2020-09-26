@@ -6,7 +6,7 @@ from memory_profiler import profile
 from seeker import get_all_employees, _normalize_datetime, get_total_work_time
 
 
-def _display_list_file_selection() -> list:
+def _get_list_file_selection():
     files: list = ['']
     n = 1
 
@@ -21,13 +21,10 @@ def _display_list_file_selection() -> list:
                          type=click.IntRange(1, len(files) - 1))
         break
 
-    select_file = f"You file selected:" \
-                  f" {click.style(files[n].name, fg='green')}"
-
-    return [os.path.abspath(files[n].path), select_file]
+    return os.path.abspath(files[n].path)
 
 
-def _display_list_selection_employee(path_to_file: str) -> list:
+def _get_selection_employee(path_to_file: str):
     select = click.confirm("Do you want to choose an employee's"
                            " name? otherwise, enter", default=False)
 
@@ -57,17 +54,10 @@ def _display_list_selection_employee(path_to_file: str) -> list:
         else:
             click.echo(click.style("Select name not found!", fg='red'))
 
-    if name != '':
-        select_name = f"You employee selected:" \
-                      f" {click.style(name, fg='green')}"
-    else:
-        select_name = f"You employee selected:" \
-                      f" {click.style('employee not specified', fg='green')}"
-
-    return [name, select_name]
+    return name
 
 
-def _display_from_date() -> list:
+def _get_from_date():
     while True:
         date = click.prompt("Enter 'from' date on format"
                             " 'year-month-day hour:minute:sec'"
@@ -83,12 +73,10 @@ def _display_from_date() -> list:
         else:
             break
 
-    select_from = f"From: {click.style(date if date else '-', fg='green')}"
-
-    return [date, select_from]
+    return date
 
 
-def _display_to_date(date_from) -> list:
+def _get_to_date(date_from):
     while True:
         date = click.prompt("Enter 'to' date on format"
                             " 'year-month-day hour:minute:sec'"
@@ -113,29 +101,63 @@ def _display_to_date(date_from) -> list:
         else:
             break
 
-    select_to = f"To: {click.style(date if date else '-', fg='green')}"
-
-    return [date, select_to]
+    return date
 
 
-def run() -> None:
-    path_to_file, select_file = _display_list_file_selection()
+@click.command()
+@click.option('--path', help='Path to file.')
+@click.option('--name', help='Employee name to search or `-`')
+@click.option('--start', help='Date start search or `-`')
+@click.option('--stop', help='Date stop search or `-`')
+@click.option('--summ', help='Sum work time [y/n]')
+def run(path, name, start, stop, summ) -> None:
+    if not path:
+        path_to_file = _get_list_file_selection()
+    else:
+        path_to_file = path
+
+    select_file = "You file selected: {}".format(click.style(path_to_file,
+                                                             fg='green'))
 
     click.clear()
     click.echo(select_file)
 
-    employee_name, select_name = _display_list_selection_employee(path_to_file)
+    if not name:
+        employee_name = _get_selection_employee(path_to_file)
+    elif name == "''":
+        employee_name = '-'
+    else:
+        employee_name = name
+
+    select_name = "You employee selected: {}".format(click.style(employee_name,
+                                                                 fg='green'))
 
     click.clear()
     click.echo(select_file)
     click.echo(select_name)
 
     click.clear()
-    from_, select_from = _display_from_date()
+
+    if not start:
+        from_ = _get_from_date()
+    elif start == "''":
+        from_ = ''
+    else:
+        from_ = start
+
+    select_from = "From: {}".format(click.style(from_ or '-', fg='green'))
 
     click.clear()
     click.echo(select_from)
-    to_, select_to = _display_to_date(from_)
+
+    if not stop and stop != '-':
+        to_ = _get_to_date(from_)
+    elif stop == "''":
+        to_ = ''
+    else:
+        to_ = stop
+
+    select_to = "To: {}".format(click.style(to_ or '-', fg='green'))
 
     click.clear()
     click.echo(select_file)
@@ -143,15 +165,20 @@ def run() -> None:
     click.echo(select_from)
     click.echo(select_to)
 
-    sum_ = click.confirm("Sum work time ?", default=False)
+    if summ == "''" or not summ:
+        sum_ = click.confirm("Sum work time ?", default=False)
+    elif summ == 'y':
+        sum_ = True
+    else:
+        sum_ = False
 
-    click.secho("Please wait...", fg='green', bold=True)
+    click.echo(f"Sum work time: {click.style(str(sum_), fg='green')}")
 
     begin_time = datetime.datetime.now()
 
     work_time = get_total_work_time(path_to_file=path_to_file,
-                                    employee_name=employee_name, from_=from_,
-                                    to_=to_, sum_=sum_)
+                                    employee_name=employee_name,
+                                    from_=from_, to_=to_, sum_=sum_)
 
     endtime = datetime.datetime.now() - begin_time
 
