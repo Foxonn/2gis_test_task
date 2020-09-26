@@ -138,7 +138,7 @@ def run(path, name, start, stop, summ) -> None:
 
     click.clear()
 
-    if not start:
+    if not start and start != '-':
         from_ = _get_from_date()
     elif start == "''":
         from_ = ''
