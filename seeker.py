@@ -1,5 +1,6 @@
 import datetime
 from collections import deque
+from memory_profiler import profile
 
 from lxml import etree
 
@@ -17,6 +18,7 @@ def _normalize_datetime(start_time: str) -> "datetime.datetime.strptime":
             raise
 
 
+@profile
 def get_total_work_time(path_to_file: str,
                         employee_name: str = '',
                         from_: str = '',
@@ -59,7 +61,7 @@ def get_total_work_time(path_to_file: str,
 
         if sum_:
             _start = _normalize_datetime(start.text)
-            _end= _normalize_datetime(end.text)
+            _end = _normalize_datetime(end.text)
             delta = _end - _start
 
             work_list[full_name] += delta
@@ -142,8 +144,8 @@ if __name__ == '__main__':
     # filtering_by_name('xml/big_work_time_employees.xml')
     # filtering_by_name('xml/very_big_work_time_employees.xml')
 
-    # print(get_total_work_time('xml/work_time_employees.xml', employee_name='t.livingston', sum_=False))
-    # get_total_work_time('xml/middle_work_time_employees.xml', employee_name='-')
-    # get_total_work_time('xml/big_work_time_employees.xml', employee_name='-', summ=False)
-    # get_total_work_time('xml/very_big_work_time_employees.xml', employee_name='-', summ=False)
+    # get_total_work_time('xml/work_time_employees.xml', employee_name='-', sum_=True)
+    get_total_work_time('xml/middle_work_time_employees.xml', employee_name='-', sum_=True)
+    # get_total_work_time('xml/big_work_time_employees.xml', employee_name='-', sum_=True)
+    # get_total_work_time('xml/very_big_work_time_employees.xml', employee_name='-', sum_=True)
     pass

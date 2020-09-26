@@ -118,7 +118,7 @@ def _display_to_date(date_from) -> list:
     return [date, select_to]
 
 
-# @profile
+@profile
 def run() -> None:
     path_to_file, select_file = _display_list_file_selection()
 
@@ -148,9 +148,13 @@ def run() -> None:
 
     click.secho("Please wait...", fg='green', bold=True)
 
+    begin_time = datetime.datetime.now()
+
     work_time = get_total_work_time(path_to_file=path_to_file,
                                     employee_name=employee_name, from_=from_,
                                     to_=to_, sum_=sum_)
+
+    endtime = datetime.datetime.now() - begin_time
 
     click.clear()
     click.echo(select_file)
@@ -160,8 +164,6 @@ def run() -> None:
     click.echo(f"Sum work time: {click.style(str(sum_), fg='green')}")
 
     click.secho('=' * 55, fg='green')
-
-    begin_time = datetime.datetime.now()
 
     if work_time:
         click.echo(
@@ -181,11 +183,8 @@ def run() -> None:
 
     click.echo('\n')
 
-    if begin_time:
-        click.secho(
-            str(f"Time execution: {datetime.datetime.now() - begin_time}"),
-            fg='yellow', bold=True
-        )
+    if endtime:
+        click.secho(str(f"Time execution: {endtime}"), fg='yellow', bold=True)
 
     return None
 
