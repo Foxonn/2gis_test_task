@@ -1,7 +1,6 @@
 import click
 import os
 import datetime
-from memory_profiler import profile
 
 from seeker import get_all_employees, _normalize_datetime, get_total_work_time
 
@@ -138,10 +137,8 @@ def run(path, name, start, stop, summ) -> None:
 
     click.clear()
 
-    if not start and start != '-':
+    if not start == "":
         from_ = _get_from_date()
-    elif start == "''":
-        from_ = ''
     else:
         from_ = start
 
@@ -150,10 +147,8 @@ def run(path, name, start, stop, summ) -> None:
     click.clear()
     click.echo(select_from)
 
-    if not stop and stop != '-':
+    if not stop == "":
         to_ = _get_to_date(from_)
-    elif stop == "''":
-        to_ = ''
     else:
         to_ = stop
 
