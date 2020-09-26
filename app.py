@@ -31,20 +31,28 @@ def _display_list_selection_employee(path_to_file: str) -> list:
     select = click.confirm("Do you want to choose an employee's"
                            " name? otherwise, enter", default=False)
 
-    employees = get_all_employees(path_to_file)
-
-    def generator_employees():
-        for n in employees:
-            yield f"{n}\n"
+    employees = []
 
     if select:
+        employees = get_all_employees(path_to_file)
+
+        def generator_employees():
+            for n in employees:
+                yield f"{n}\n"
+
         click.echo_via_pager(generator_employees())
 
     while True:
         name = click.prompt("Enter name employee", type=str,
                             default='-').strip()
 
-        if not select and name == '-' or name in employees:
+        if not select and name == '-':
+            break
+
+        if not employees:
+            employees = get_all_employees(path_to_file)
+
+        if name in employees:
             break
         else:
             click.echo(click.style("Select name not found!", fg='red'))
@@ -110,7 +118,7 @@ def _display_to_date(date_from) -> list:
     return [date, select_to]
 
 
-@profile
+# @profile
 def run() -> None:
     path_to_file, select_file = _display_list_file_selection()
 
@@ -149,6 +157,7 @@ def run() -> None:
     click.echo(select_name)
     click.echo(select_from)
     click.echo(select_to)
+    click.echo(f"Sum work time: {click.style(str(sum_), fg='green')}")
 
     click.secho('=' * 55, fg='green')
 
