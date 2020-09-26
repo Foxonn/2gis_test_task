@@ -1,6 +1,6 @@
 import datetime
+from collections import deque
 
-from memory_profiler import profile
 from lxml import etree
 
 _DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -21,7 +21,7 @@ def get_total_work_time(path_to_file: str,
                         employee_name: str = '',
                         from_: str = '',
                         to_: str = '',
-                        summ: bool = True) -> dict:
+                        sum_: bool = True) -> dict:
     context = _get_context(path_to_file)
 
     work_list = {}
@@ -50,37 +50,28 @@ def get_total_work_time(path_to_file: str,
         if employee_name != '-' and full_name != employee_name:
             continue
 
-        if full_name not in work_list:
-            work_list[full_name] = []
+        if not sum_:
+            if full_name not in work_list:
+                work_list[full_name] = []
+        else:
+            if full_name not in work_list:
+                work_list[full_name] = datetime.timedelta(0)
 
-        work_list[full_name].append({
-            'start': start.text,
-            'end': end.text,
-        })
+        if sum_:
+            _start = _normalize_datetime(start.text)
+            _end= _normalize_datetime(end.text)
+            delta = _end - _start
 
-    if summ:
-        total_work_times = {}
-
-        for full_name, times in work_list.items():
-            common_times = datetime.timedelta(0)
-
-            for time in times:
-                end = _normalize_datetime(time['end'])
-                start = _normalize_datetime(time['start'])
-                delta = end - start
-
-                common_times += delta
-
-            total_work_times.update({
-                full_name: str(common_times)
+            work_list[full_name] += delta
+        else:
+            work_list[full_name].append({
+                'start': start.text,
+                'end': end.text,
             })
-
-        return total_work_times if total_work_times else None
 
     return work_list if work_list else None
 
 
-@profile
 def filtering_by_name(file_name: str, employee_name: str = '') -> None:
     context = _get_context(file_name)
 
@@ -91,9 +82,13 @@ def filtering_by_name(file_name: str, employee_name: str = '') -> None:
         end = elem.find('end')
 
         if full_name == employee_name:
-            print({'full_name': full_name, 'start': start.text, 'end': end.text,})
+            print({'full_name': full_name, 'start': start.text,
+                   'end': end.text, })
+            pass
         else:
-            print({'full_name': full_name, 'start': start.text, 'end': end.text,})
+            print({'full_name': full_name, 'start': start.text,
+                   'end': end.text, })
+            pass
 
         _clear_context(elem)
 
@@ -103,17 +98,28 @@ def filtering_by_name(file_name: str, employee_name: str = '') -> None:
 def get_all_employees(file_name: str) -> list:
     context = _get_context(file_name)
 
-    list_full_name = []
+    list_full_name = deque()
 
     for event, elem in context:
         full_name = elem.attrib.get('full_name')
 
-        if full_name not in list_full_name:
-            list_full_name.append(full_name)
+        list_full_name.append(full_name)
 
         _clear_context(elem)
 
-    return sorted(list_full_name)
+    return sorted(set(list_full_name))
+
+
+def get_exist_employees(file_name: str, employee_name: str) -> bool:
+    context = _get_context(file_name)
+
+    for event, elem in context:
+        full_name = elem.attrib.get('full_name')
+
+        if full_name == employee_name:
+            return True
+
+    return False
 
 
 def _clear_context(elem: etree._Element) -> None:
@@ -131,13 +137,12 @@ def _get_context(file_name: str) -> "etree.iterparse":
 
 
 if __name__ == '__main__':
-    # print(get_all_employees('xml/work_time_employees.xml'))
     # filtering_by_name('xml/work_time_employees.xml')
     # filtering_by_name('xml/middle_work_time_employees.xml')
-    filtering_by_name('xml/big_work_time_employees.xml')
+    # filtering_by_name('xml/big_work_time_employees.xml')
     # filtering_by_name('xml/very_big_work_time_employees.xml')
 
-    # get_total_work_time('xml/work_time_employees.xml', employee_name='-')
+    # print(get_total_work_time('xml/work_time_employees.xml', employee_name='t.livingston', sum_=False))
     # get_total_work_time('xml/middle_work_time_employees.xml', employee_name='-')
     # get_total_work_time('xml/big_work_time_employees.xml', employee_name='-', summ=False)
     # get_total_work_time('xml/very_big_work_time_employees.xml', employee_name='-', summ=False)

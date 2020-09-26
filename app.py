@@ -1,17 +1,20 @@
 import click
 import os
+import datetime
+from memory_profiler import profile
 
 from seeker import get_all_employees, _normalize_datetime, get_total_work_time
 
 
 def _display_list_file_selection() -> list:
     files: list = ['']
-    n = ''
+    n = 1
 
-    for n, file in enumerate(os.scandir('xml'), 1):
+    for file in os.scandir('xml'):
         if file.name.endswith('.xml'):
             click.echo(f"[{n}] {click.style(file.name, fg='green')}")
             files.append(file)
+            n += 1
 
     while True:
         n = click.prompt(text=f"Select number file",
@@ -26,7 +29,7 @@ def _display_list_file_selection() -> list:
 
 def _display_list_selection_employee(path_to_file: str) -> list:
     select = click.confirm("Do you want to choose an employee's"
-                           " name? otherwise, enter")
+                           " name? otherwise, enter", default=False)
 
     employees = get_all_employees(path_to_file)
 
@@ -107,6 +110,7 @@ def _display_to_date(date_from) -> list:
     return [date, select_to]
 
 
+@profile
 def run() -> None:
     path_to_file, select_file = _display_list_file_selection()
 
@@ -132,14 +136,13 @@ def run() -> None:
     click.echo(select_from)
     click.echo(select_to)
 
+    sum_ = click.confirm("Sum work time ?", default=False)
+
     click.secho("Please wait...", fg='green', bold=True)
 
-    work_time = get_total_work_time(
-        path_to_file=path_to_file,
-        employee_name=employee_name,
-        from_=from_,
-        to_=to_
-    )
+    work_time = get_total_work_time(path_to_file=path_to_file,
+                                    employee_name=employee_name, from_=from_,
+                                    to_=to_, sum_=sum_)
 
     click.clear()
     click.echo(select_file)
@@ -149,16 +152,31 @@ def run() -> None:
 
     click.secho('=' * 55, fg='green')
 
+    begin_time = datetime.datetime.now()
+
     if work_time:
         click.echo(
             f'{click.style("Name".ljust(16), fg="yellow", bold=True)}'
-            f'| {click.style("Total work time", fg="yellow", bold=True)}'
+            f'| {click.style("Work time", fg="yellow", bold=True)}'
         )
 
         for name, time in work_time.items():
-            click.echo(f'{name.ljust(15)} | {time}')
+            if type(time) == list:
+                click.secho(name, fg='green', bold=True)
+                click.echo(time)
+                click.secho('=' * 100, fg='yellow')
+            else:
+                click.echo(f'{name.ljust(15)} | {time}')
     else:
         click.echo("Data not found !")
+
+    click.echo('\n')
+
+    if begin_time:
+        click.secho(
+            str(f"Time execution: {datetime.datetime.now() - begin_time}"),
+            fg='yellow', bold=True
+        )
 
     return None
 
